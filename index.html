@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hallenbad Status Zürich</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏊‍♀️</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏊‍♀️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏠</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏠</text></svg>">
     <meta name="mobile-web-app-capable" content="yes">
     <style>
         :root {
@@ -14,145 +14,114 @@
             --bg: #f8f9fa;
             --text: #333;
             --subtle: #888;
+            --link: #0056b3;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.5;
-        }
-
-        header {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .status-header {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .current-time {
-            font-size: 0.85rem;
-            color: var(--subtle);
-            margin-top: 5px;
-            display: block;
-        }
-
-        .pool-card {
-            background: white;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
-
-        .summary {
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            list-style: none;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.5; }
+        header { margin-bottom: 30px; text-align: center; }
+        .status-header { font-size: 1.2rem; font-weight: 600; margin: 0; }
+        .current-time { font-size: 0.85rem; color: var(--subtle); margin-top: 5px; display: block; }
+        .pool-card { background: white; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
+        .summary { padding: 15px; display: flex; align-items: center; cursor: pointer; list-style: none; justify-content: space-between; flex-wrap: wrap; }
         .summary::-webkit-details-marker { display: none; }
-
         .status-info { display: flex; align-items: center; gap: 10px; }
-
-        .indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
+        .indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
         .open .indicator { background-color: var(--open); }
         .closed .indicator { background-color: var(--closed); }
-
         .pool-name { font-weight: bold; font-size: 1.1rem; }
-
         .time-hint { font-size: 0.9rem; color: #666; }
-
-        .details-content {
-            padding: 0 15px 15px 15px;
-            font-size: 0.85rem;
-            border-top: 1px solid #eee;
-        }
-
+        .details-content { padding: 0 15px 15px 15px; font-size: 0.85rem; border-top: 1px solid #eee; }
         table { width: 100%; margin-top: 10px; border-collapse: collapse; }
         td { padding: 4px 0; border-bottom: 1px solid #f9f9f9; }
         td:last-child { text-align: right; }
-        
         .is-today { font-weight: bold; color: var(--open); }
-
-        @media (max-width: 400px) {
-            .time-hint { width: 100%; margin-left: 22px; margin-top: 5px; }
-        }
+        .pool-link { display: block; margin-top: 15px; color: var(--link); text-decoration: none; font-weight: 500; text-align: right; }
+        @media (max-width: 400px) { .time-hint { width: 100%; margin-left: 22px; margin-top: 5px; } }
     </style>
 </head>
 <body>
-
 <header>
     <p class="status-header">Hallenbad Status</p>
-    <span id="datetime-display" class="current-time">Lade Datum und Uhrzeit...</span>
+    <span id="datetime-display" class="current-time"></span>
 </header>
-
 <div id="app"></div>
-
 <script>
     const pools = [
         {
             name: "Bläsi",
-            schedule: { 1: [12, 19], 2: [9, 20], 3: [9, 19], 4: [9, 22], 5: [9, 19], 6: [9, 18], 0: [9, 18] },
+            url: "https://www.stadt-zuerich.ch/de/stadtleben/sport-und-erholung/sport-und-badeanlagen/hallenbaeder/blaesi.html",
+            schedule: { 1: [[12, 19]], 2: [[9, 20]], 3: [[9, 19]], 4: [[9, 22]], 5: [[9, 19]], 6: [[9, 18]], 0: [[9, 18]] },
             labels: { 1: "12:00 – 19:00 Uhr", 2: "09:00 – 20:00 Uhr", 3: "09:00 – 19:00 Uhr", 4: "09:00 – 22:00 Uhr", 5: "09:00 – 19:00 Uhr", 6: "09:00 – 18:00 Uhr", 0: "09:00 – 18:00 Uhr" }
         },
         {
             name: "Käferberg",
-            schedule: { 1: [11, 15], 2: [6.5, 22], 3: [6.5, 22], 4: [6.5, 22], 5: [6.5, 22], 6: [9, 18], 0: [9, 18] },
-            labels: { 1: "11:00 – 15:00 Uhr", 2: "06:30 – 22:00 Uhr", 3: "06:30 – 22:00 Uhr", 4: "06:30 – 22:00 Uhr", 5: "06:30 – 22:00 Uhr", 6: "09:00 – 18:00 Uhr", 0: "09:00 – 18:00 Uhr" }
+            url: "https://www.stadt-zuerich.ch/de/stadtleben/sport-und-erholung/sport-und-badeanlagen/hallenbaeder/kaeferberg.html",
+            schedule: { 1: [[11, 15]], 2: [[6.5, 22]], 3: [[6.5, 15], [18, 22]], 4: [[6.5, 8], [11, 22]], 5: [[6.5, 22]], 6: [[9, 18]], 0: [[9, 18]] },
+            labels: { 1: "11:00 – 15:00 Uhr", 2: "06:30 – 22:00 Uhr", 3: "06:30 – 15 & 18:00 – 22:00 Uhr", 4: "06:30 – 08 & 11:00 – 22:00 Uhr", 5: "06:30 – 22:00 Uhr", 6: "09:00 – 18:00 Uhr", 0: "09:00 – 18:00 Uhr" }
         },
         {
             name: "Oerlikon",
-            schedule: { 1: [6, 20], 2: [6, 20], 3: [6, 22], 4: [6, 20], 5: [6, 22], 6: [6, 22], 0: [6, 22] },
+            url: "https://www.stadt-zuerich.ch/de/stadtleben/sport-und-erholung/sport-und-badeanlagen/hallenbaeder/oerlikon.html",
+            schedule: { 1: [[6, 20]], 2: [[6, 20]], 3: [[6, 22]], 4: [[6, 20]], 5: [[6, 22]], 6: [[6, 22]], 0: [[6, 22]] },
             labels: { 1: "06:00 – 20:00 Uhr", 2: "06:00 – 20:00 Uhr", 3: "06:00 – 22:00 Uhr", 4: "06:00 – 20:00 Uhr", 5: "06:00 – 22:00 Uhr", 6: "06:00 – 22:00 Uhr", 0: "06:00 – 22:00 Uhr" }
         },
         {
             name: "City",
-            schedule: { 0: [6, 22], 1: [6, 22], 2: [6, 22], 3: [6, 22], 4: [6, 22], 5: [6, 22], 6: [6, 22] },
+            url: "https://www.stadt-zuerich.ch/de/stadtleben/sport-und-erholung/sport-und-badeanlagen/hallenbaeder/city.html",
+            schedule: { 0: [[6, 22]], 1: [[6, 22]], 2: [[6, 22]], 3: [[6, 22]], 4: [[6, 22]], 5: [[6, 22]], 6: [[6, 22]] },
             labels: { 1: "06:00 – 22:00 Uhr", 2: "06:00 – 22:00 Uhr", 3: "06:00 – 22:00 Uhr", 4: "06:00 – 22:00 Uhr", 5: "06:00 – 22:00 Uhr", 6: "06:00 – 22:00 Uhr", 0: "06:00 – 22:00 Uhr" }
         }
     ];
 
     const wochentage = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
+    function formatTime(decimal) {
+        const h = Math.floor(decimal);
+        const m = Math.round((decimal % 1) * 60);
+        return `${h}:${m.toString().padStart(2, '0')} Uhr`;
+    }
+
     function updateUI() {
         const now = new Date();
         const day = now.getDay();
         const hour = now.getHours() + (now.getMinutes() / 60);
 
-        // Header Zeit-Update
         const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-        const timeOptions = { hour: '2-digit', minute: '2-digit' };
-        const formattedDate = now.toLocaleDateString('de-DE', dateOptions);
-        const formattedTime = now.toLocaleTimeString('de-DE', timeOptions);
-        document.getElementById('datetime-display').textContent = `${formattedDate}, ${formattedTime} Uhr`;
+        document.getElementById('datetime-display').textContent = `${now.toLocaleDateString('de-DE', dateOptions)}, ${now.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})} Uhr`;
 
         const container = document.getElementById('app');
         container.innerHTML = '';
         
         pools.forEach(pool => {
-            const times = pool.schedule[day];
-            const isOpen = times && hour >= times[0] && hour < times[1];
-            
-            const currentLabel = pool.labels[day];
-            const statusText = isOpen ? `schliesst um ${currentLabel.split(' – ')[1]}` : `öffnet um ${currentLabel.split(' – ')[0]}`;
+            let isOpen = false;
+            let statusText = "";
+            const todaySlots = pool.schedule[day];
+
+            // Prüfen ob jetzt offen
+            for (const slot of todaySlots) {
+                if (hour >= slot[0] && hour < slot[1]) {
+                    isOpen = true;
+                    statusText = `schliesst um ${formatTime(slot[1])}`;
+                    break;
+                }
+            }
+
+            // Wenn geschlossen, nächste Öffnung finden
+            if (!isOpen) {
+                let found = false;
+                // Erst heute später schauen
+                for (const slot of todaySlots) {
+                    if (slot[0] > hour) {
+                        statusText = `öffnet um ${formatTime(slot[0])}`;
+                        found = true; break;
+                    }
+                }
+                // Sonst morgen schauen
+                if (!found) {
+                    const nextDay = (day + 1) % 7;
+                    const nextDaySlots = pool.schedule[nextDay];
+                    statusText = `öffnet morgen um ${formatTime(nextDaySlots[0][0])}`;
+                }
+            }
 
             let tableHtml = '<table>';
             [1, 2, 3, 4, 5, 6, 0].forEach(d => {
@@ -172,13 +141,11 @@
                     </summary>
                     <div class="details-content">
                         ${tableHtml}
+                        <a href="${pool.url}" class="pool-link" target="_blank">Zum Bad →</a>
                     </div>
-                </details>
-            `;
+                </details>`;
         });
     }
-
-    // Initial ausführen und jede Minute aktualisieren
     updateUI();
     setInterval(updateUI, 60000);
 </script>
