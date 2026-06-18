@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<!-- saved from url=(0122)file:///Users/m.mattenberger/Documents/Codex/2026-06-15/erstelle-mir-ein-html-basiertes-dashboard-3/outputs/dashboard.html -->
+<html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zürich Wasser &amp; Wetter Dashboard</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-2: #eef6f8;
+      --text: #172026;
+      --muted: #60717a;
+      --primary: #006d77;
+      --primary-soft: #d6f1f2;
+      --secondary: #a34700;
+      --blue: #1d78c1;
+      --green: #1e8e3e;
+      --red: #c5221f;
+      --yellow: #f9ab00;
+      --shadow: 0 10px 30px rgba(22, 36, 48, 0.12);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+      background:
+        linear-gradient(180deg, rgba(0, 109, 119, 0.11), rgba(245, 247, 251, 0) 360px),
+        var(--bg);
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 36px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    .eyebrow {
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin-top: 8px;
+      font-size: clamp(30px, 5vw, 54px);
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1;
+    }
+
+    .subtitle {
+      max-width: 640px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: var(--surface);
+      box-shadow: 0 2px 10px rgba(22, 36, 48, 0.08);
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    button {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      font-size: 22px;
+      line-height: 1;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(1px); box-shadow: 0 6px 14px rgba(22, 36, 48, 0.18); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      position: relative;
+      min-height: 184px;
+      padding: 20px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card.hero {
+      min-height: 300px;
+      grid-row: span 2;
+      color: #fff;
+      background:
+        linear-gradient(145deg, rgba(0, 82, 92, 0.95), rgba(19, 118, 128, 0.78)),
+        url("https://images.unsplash.com/photo-1527668752968-14dc70a27c95?auto=format&fit=crop&w=1600&q=80") center / cover;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .hero .label { color: rgba(255,255,255,0.78); }
+
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 22px;
+      flex: 0 0 auto;
+    }
+
+    .hero .icon {
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      backdrop-filter: blur(8px);
+    }
+
+    .value {
+      margin-top: 24px;
+      font-size: 46px;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1;
+    }
+
+    .hero .value {
+      margin-top: 46px;
+      font-size: clamp(58px, 9vw, 92px);
+    }
+
+    .unit {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .hero .unit { color: rgba(255,255,255,0.82); }
+
+    .meta {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .hero .meta { color: rgba(255,255,255,0.86); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .metric {
+      padding: 12px;
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.14);
+      backdrop-filter: blur(8px);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 19px;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 4px;
+      color: rgba(255,255,255,0.76);
+      font-size: 12px;
+    }
+
+    .badi-state {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #9aa7ad;
+      box-shadow: 0 0 0 7px rgba(154, 167, 173, 0.14);
+    }
+
+    .dot.open {
+      background: var(--green);
+      box-shadow: 0 0 0 7px rgba(30, 142, 62, 0.16);
+    }
+
+    .dot.closed {
+      background: var(--red);
+      box-shadow: 0 0 0 7px rgba(197, 34, 31, 0.14);
+    }
+
+    .state-text {
+      font-size: 30px;
+      font-weight: 800;
+      text-transform: capitalize;
+    }
+
+    .forecast {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .forecast-item {
+      min-height: 116px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: var(--surface-2);
+    }
+
+    .forecast-time {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .forecast-temp {
+      margin-top: 12px;
+      font-size: 26px;
+      font-weight: 800;
+    }
+
+    .forecast-desc {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .source-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .source-row a {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .source-row a:hover { text-decoration: underline; }
+
+    .error {
+      margin-top: 14px;
+      color: var(--secondary);
+      font-size: 13px;
+      line-height: 1.35;
+      display: none;
+    }
+
+    .error.show { display: block; }
+
+    @media (max-width: 980px) {
+      header { align-items: flex-start; flex-direction: column; }
+      .grid { grid-template-columns: 1fr 1fr; }
+      .card.hero { grid-column: 1 / -1; grid-row: auto; }
+      .forecast { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      .app { width: min(100% - 20px, 1180px); padding-top: 18px; }
+      .grid { grid-template-columns: 1fr; }
+      .forecast { grid-template-columns: 1fr 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+      .card { min-height: 166px; padding: 18px; }
+      .hero .value { margin-top: 34px; }
+      .value { font-size: 40px; }
+      .state-text { font-size: 26px; }
+      .toolbar { width: 100%; justify-content: space-between; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <p class="eyebrow">Zürich live</p>
+        <h1>Wasser &amp; Wetter</h1>
+        <p class="subtitle">Lufttemperatur, Regen, Wind, Gewitterrisiko, Limmatwerte, Oberer Letten und das Zürichsee-Seebecken in einem ruhigen Material-Dashboard.</p>
+      </div>
+      <div class="toolbar">
+        <div class="status-chip" id="updated">Stand 09:11</div>
+        <button id="refresh" title="Aktualisieren" aria-label="Aktualisieren">↻</button>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card hero">
+        <div class="card-header">
+          <div>
+            <p class="label">Lufttemperatur Zürich</p>
+            <h2 id="weather-title">Klar</h2>
+          </div>
+          <div class="icon" id="weather-icon">☀</div>
+        </div>
+        <div class="value"><span id="air-temp">21.4</span><span class="unit"> °C</span></div>
+        <p class="meta" id="weather-summary">Fallback-Anzeige, Live-Wetter konnte nicht vollständig geladen werden.</p>
+        <div class="metrics">
+          <div class="metric"><strong id="rain-now">0.0 mm</strong><span>Regen jetzt</span></div>
+          <div class="metric"><strong id="wind-now">10 km/h</strong><span>Wind</span></div>
+          <div class="metric"><strong id="storm-risk">gering</strong><span>Gewitter</span></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <p class="label">Limmat Oberer Letten</p>
+          <div class="icon">≈</div>
+        </div>
+        <div class="value"><span id="limmat-temp">14</span><span class="unit"> °C</span></div>
+        <p class="meta" id="limmat-temp-meta">Fallback nach letztem Testabruf: Mo., 15.06.2026 08:56.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <p class="label">Strömung Limmat</p>
+          <div class="icon">↝</div>
+        </div>
+        <div class="value"><span id="flow">57</span><span class="unit"> m³/s</span></div>
+        <p class="meta" id="flow-meta">Fallback nach BAFU-Testabruf: 15.06.2026 11:40.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <p class="label">Oberer Letten Badi</p>
+          <div class="icon">●</div>
+        </div>
+        <div class="badi-state">
+          <span class="dot open" id="badi-dot"></span>
+          <span class="state-text" id="badi-state">offen</span>
+        </div>
+        <p class="meta" id="badi-meta">Fallback nach letztem Testabruf: Mo., 15.06.2026 08:56.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <p class="label">Zürichsee Seebecken</p>
+          <div class="icon">≋</div>
+        </div>
+        <div class="value"><span id="lake-temp">16.4</span><span class="unit"> °C</span></div>
+        <p class="meta" id="lake-meta">Schnitt aus Enge, Utoquai, Mythenquai, Tiefenbrunnen und Wollishofen</p>
+      </article>
+
+      <section class="forecast" id="forecast">
+          <article class="forecast-item">
+            <div class="forecast-time">12:00</div>
+            <div class="forecast-temp">☀ 22°</div>
+            <div class="forecast-desc">Trocken<br>0% Regen · 10 km/h</div>
+          </article>
+          <article class="forecast-item">
+            <div class="forecast-time">13:00</div>
+            <div class="forecast-temp">☀ 23°</div>
+            <div class="forecast-desc">Trocken<br>0% Regen · 10 km/h</div>
+          </article>
+          <article class="forecast-item">
+            <div class="forecast-time">14:00</div>
+            <div class="forecast-temp">☀ 24°</div>
+            <div class="forecast-desc">Trocken<br>0% Regen · 10 km/h</div>
+          </article>
+          <article class="forecast-item">
+            <div class="forecast-time">15:00</div>
+            <div class="forecast-temp">☀ 25°</div>
+            <div class="forecast-desc">Trocken<br>0% Regen · 10 km/h</div>
+          </article>
+          <article class="forecast-item">
+            <div class="forecast-time">16:00</div>
+            <div class="forecast-temp">☀ 26°</div>
+            <div class="forecast-desc">Trocken<br>0% Regen · 10 km/h</div>
+          </article>
+          <article class="forecast-item">
+            <div class="forecast-time">17:00</div>
+            <div class="forecast-temp">☀ 27°</div>
+            <div class="forecast-desc">Trocken<br>0% Regen · 10 km/h</div>
+          </article></section>
+    </section>
+
+    <p class="error show" id="error">Einige Live-Feeds konnten nicht geladen werden. Für betroffene Kacheln werden Ersatzwerte angezeigt. Starte das Dashboard lokal mit server.py, damit Stadt- und BAFU-Daten korrekt live geladen werden.</p>
+    <div class="source-row">
+      <a href="https://api.open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>
+      <a href="https://data.stadt-zuerich.ch/dataset/wassertemperaturen-freibaeder" target="_blank" rel="noreferrer">Open Data Zürich Badi</a>
+      <a href="https://www.hydrodaten.admin.ch/de/seen-und-fluesse/stationen-und-daten/2099" target="_blank" rel="noreferrer">BAFU Limmat 2099</a>
+    </div>
+  </main>
+
+  <script>
+    const fallback = {
+      airTemp: 21.4,
+      rain: 0,
+      wind: 9.8,
+      gust: 22.3,
+      weatherCode: 0,
+      limmatTemp: 14,
+      limmatStamp: "Mo., 15.06.2026 08:56",
+      badi: "offen",
+      lakeTemp: 16.4,
+      lakeMeta: "Schnitt aus Enge, Utoquai, Mythenquai, Tiefenbrunnen und Wollishofen",
+      flow: 57,
+      flowStamp: "15.06.2026 11:40"
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const fmt = (value, digits = 0) => Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : "--";
+    const isLocal = ["localhost", "127.0.0.1", ""].includes(location.hostname);
+    const endpoints = {
+      weather: isLocal
+        ? "/api/weather"
+        : "https://api.open-meteo.com/v1/forecast?latitude=47.3769&longitude=8.5417&current=temperature_2m,precipitation,rain,showers,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,precipitation,rain,showers,weather_code,wind_speed_10m,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&timezone=Europe%2FZurich&forecast_days=3",
+      baths: isLocal
+        ? "/api/baths"
+        : "https://www.stadt-zuerich.ch/stzh/bathdatadownload",
+      flow: isLocal
+        ? "/api/flow"
+        : "https://www.hydrodaten.admin.ch/plots/p_q_7days/2099_p_q_7days_de.json"
+      ,
+      lakeTiefenbrunnen: isLocal
+        ? "/api/lake/tiefenbrunnen"
+        : "https://tecdottir.metaodi.ch/measurements/tiefenbrunnen?sort=timestamp_cet%20desc&limit=1",
+      lakeMythenquai: isLocal
+        ? "/api/lake/mythenquai"
+        : "https://tecdottir.metaodi.ch/measurements/mythenquai?sort=timestamp_cet%20desc&limit=1"
+    };
+
+    const weatherMap = {
+      0: ["Klar", "☀"], 1: ["Meist sonnig", "◐"], 2: ["Teilweise bewölkt", "◑"], 3: ["Bewölkt", "☁"],
+      45: ["Nebel", "≡"], 48: ["Raureifnebel", "≡"], 51: ["Nieselregen", "☂"], 53: ["Nieselregen", "☂"],
+      55: ["Starker Nieselregen", "☂"], 61: ["Regen", "☔"], 63: ["Regen", "☔"], 65: ["Starker Regen", "☔"],
+      71: ["Schneefall", "❄"], 80: ["Schauer", "☔"], 81: ["Schauer", "☔"], 82: ["Starke Schauer", "☔"],
+      95: ["Gewitter", "⚡"], 96: ["Gewitter mit Hagel", "⚡"], 99: ["Schweres Gewitter", "⚡"]
+    };
+
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    async function fetchText(url) {
+      const response = await fetchWithTimeout(url, { cache: "no-store" });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return await response.text();
+    }
+
+    async function fetchJson(url) {
+      return JSON.parse(await fetchText(url));
+    }
+
+    function setError(message) {
+      $("error").textContent = message;
+      $("error").classList.add("show");
+    }
+
+    function clearError() {
+      $("error").classList.remove("show");
+      $("error").textContent = "";
+    }
+
+    function describeStorm(hourly) {
+      const now = new Date();
+      const next = hourly.time
+        .map((time, index) => ({ time: new Date(time), code: hourly.weather_code[index], pop: hourly.precipitation_probability[index] }))
+        .filter((row) => row.time >= now)
+        .slice(0, 12);
+      const thunder = next.find((row) => row.code >= 95);
+      if (thunder) return "möglich";
+      const maxPop = Math.max(...next.map((row) => row.pop || 0));
+      return maxPop >= 55 ? "erhöht" : "gering";
+    }
+
+    function renderForecast(hourly) {
+      const now = new Date();
+      const rows = hourly.time
+        .map((time, index) => ({
+          time: new Date(time),
+          temp: hourly.temperature_2m[index],
+          pop: hourly.precipitation_probability[index],
+          code: hourly.weather_code[index],
+          wind: hourly.wind_speed_10m[index]
+        }))
+        .filter((row) => row.time >= now)
+        .slice(0, 6);
+
+      $("forecast").innerHTML = rows.map((row) => {
+        const [label, icon] = weatherMap[row.code] || ["Wetter", "◌"];
+        const time = row.time.toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" });
+        return `
+          <article class="forecast-item">
+            <div class="forecast-time">${time}</div>
+            <div class="forecast-temp">${icon} ${fmt(row.temp, 0)}°</div>
+            <div class="forecast-desc">${label}<br>${row.pop ?? 0}% Regen · ${fmt(row.wind, 0)} km/h</div>
+          </article>`;
+      }).join("");
+    }
+
+    async function loadWeather() {
+      const data = await fetchJson(endpoints.weather);
+      const current = data.current || {};
+      const [label, icon] = weatherMap[current.weather_code] || ["Aktuelles Wetter", "◌"];
+      $("air-temp").textContent = fmt(current.temperature_2m, 1);
+      $("weather-icon").textContent = icon;
+      $("weather-title").textContent = label;
+      $("weather-summary").textContent = `Heute ${fmt(data.daily.temperature_2m_min[0], 0)} bis ${fmt(data.daily.temperature_2m_max[0], 0)} °C, ${fmt(data.daily.precipitation_sum[0], 1)} mm Niederschlag erwartet.`;
+      $("rain-now").textContent = `${fmt((current.rain || 0) + (current.showers || 0), 1)} mm`;
+      $("wind-now").textContent = `${fmt(current.wind_speed_10m, 0)} km/h`;
+      $("storm-risk").textContent = describeStorm(data.hourly);
+      renderForecast(data.hourly);
+    }
+
+    function parseBaths(xmlText) {
+      const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+      return [...doc.querySelectorAll("bath")].map((bath) => {
+        const get = (tag) => bath.querySelector(tag)?.textContent?.trim() || "";
+        return {
+          title: get("title"),
+          temperature: Number(get("temperatureWater")),
+          status: get("openClosedTextPlain").toLowerCase(),
+          modified: get("dateModified")
+        };
+      });
+    }
+
+    async function loadBaths() {
+      const text = await fetchText(endpoints.baths);
+      const baths = parseBaths(text);
+      const letten = baths.find((bath) => bath.title === "Flussbad Oberer Letten");
+      if (letten) {
+        $("limmat-temp").textContent = fmt(letten.temperature, 0);
+        $("limmat-temp-meta").textContent = `Gemessen ${letten.modified}.`;
+        $("badi-state").textContent = letten.status || "unbekannt";
+        $("badi-meta").textContent = `Oberer Letten: ${letten.modified}.`;
+        $("badi-dot").className = "dot " + (letten.status.includes("offen") ? "open" : "closed");
+      }
+
+      const lakeNames = ["Seebad Enge", "Seebad Utoquai", "Strandbad Mythenquai", "Strandbad Tiefenbrunnen", "Strandbad Wollishofen"];
+      const lakeBaths = baths.filter((bath) => lakeNames.includes(bath.title) && Number.isFinite(bath.temperature));
+      if (lakeBaths.length) {
+        const avg = lakeBaths.reduce((sum, bath) => sum + bath.temperature, 0) / lakeBaths.length;
+        const newest = lakeBaths.map((bath) => bath.modified).filter(Boolean).sort().at(-1);
+        $("lake-temp").textContent = fmt(avg, 1);
+        $("lake-meta").textContent = `Schnitt aus ${lakeBaths.length} Seebad-Messungen im Seebecken. Letzte Meldung: ${newest}.`;
+      }
+    }
+
+    function latestFlowFromPlot(plot) {
+      const traces = plot?.plot?.data || [];
+      const discharge = traces.find((trace) => trace.yaxis === "y2" || /abfluss|m³\/s|q/i.test(trace.name || "")) || traces.at(-1);
+      if (!discharge?.y?.length) return null;
+      const index = discharge.y.length - 1;
+      return {
+        value: discharge.y[index],
+        time: discharge.x?.[index]
+      };
+    }
+
+    async function loadFlow() {
+      const data = await fetchJson(endpoints.flow);
+      const latest = latestFlowFromPlot(data);
+      if (latest) {
+        $("flow").textContent = fmt(latest.value, 0);
+        const stamp = latest.time ? new Date(latest.time).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" }) : "";
+        $("flow-meta").textContent = `Aktueller Abfluss an der BAFU-Station Zürich Unterhard ${stamp ? "(" + stamp + ")" : ""}.`;
+      }
+    }
+
+    async function loadLake() {
+      const results = await Promise.allSettled([
+        fetchJson(endpoints.lakeTiefenbrunnen),
+        fetchJson(endpoints.lakeMythenquai)
+      ]);
+      const stations = results
+        .filter((result) => result.status === "fulfilled")
+        .map((result) => result.value?.result?.[0])
+        .filter(Boolean)
+        .map((row) => ({
+          station: row.station,
+          temperature: row.values?.water_temperature?.value,
+          timestamp: row.values?.timestamp_cet?.value || row.timestamp
+        }))
+        .filter((row) => Number.isFinite(Number(row.temperature)));
+
+      if (!stations.length) throw new Error("Keine Seebecken-Messwerte verfügbar");
+
+      const avg = stations.reduce((sum, row) => sum + Number(row.temperature), 0) / stations.length;
+      const latest = stations
+        .map((row) => row.timestamp)
+        .filter(Boolean)
+        .sort()
+        .at(-1);
+      const stationNames = stations
+        .map((row) => row.station === "tiefenbrunnen" ? "Tiefenbrunnen" : "Mythenquai")
+        .join(" / ");
+      const stamp = latest ? new Date(latest).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" }) : "";
+
+      $("lake-temp").textContent = fmt(avg, 1);
+      $("lake-meta").textContent = `Wasserschutzpolizei ${stationNames}${stamp ? ", " + stamp : ""}.`;
+    }
+
+    function applyFallback() {
+      $("air-temp").textContent = fmt(fallback.airTemp, 1);
+      $("weather-title").textContent = "Klar";
+      $("weather-summary").textContent = "Fallback-Anzeige, Live-Wetter konnte nicht vollständig geladen werden.";
+      $("rain-now").textContent = `${fmt(fallback.rain, 1)} mm`;
+      $("wind-now").textContent = `${fmt(fallback.wind, 0)} km/h`;
+      $("storm-risk").textContent = "gering";
+      $("limmat-temp").textContent = fmt(fallback.limmatTemp, 0);
+      $("limmat-temp-meta").textContent = `Fallback nach letztem Testabruf: ${fallback.limmatStamp}.`;
+      $("badi-state").textContent = fallback.badi;
+      $("badi-dot").className = "dot open";
+      $("badi-meta").textContent = `Fallback nach letztem Testabruf: ${fallback.limmatStamp}.`;
+      $("lake-temp").textContent = fmt(fallback.lakeTemp, 1);
+      $("lake-meta").textContent = fallback.lakeMeta;
+      $("flow").textContent = fmt(fallback.flow, 0);
+      $("flow-meta").textContent = `Fallback nach BAFU-Testabruf: ${fallback.flowStamp}.`;
+      if (!$("forecast").children.length) {
+        $("forecast").innerHTML = ["12:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map((time, index) => `
+          <article class="forecast-item">
+            <div class="forecast-time">${time}</div>
+            <div class="forecast-temp">☀ ${22 + index}°</div>
+            <div class="forecast-desc">Trocken<br>0% Regen · 10 km/h</div>
+          </article>`).join("");
+      }
+    }
+
+    async function loadAll() {
+      clearError();
+      $("updated").textContent = "Aktualisiere...";
+      const results = await Promise.allSettled([loadWeather(), loadBaths(), loadFlow(), loadLake()]);
+      const failed = results.filter((result) => result.status === "rejected");
+      if (failed.length) {
+        applyFallback();
+        setError("Einige Live-Feeds konnten nicht geladen werden. Für betroffene Kacheln werden Ersatzwerte angezeigt. Starte das Dashboard lokal mit server.py, damit Stadt- und BAFU-Daten korrekt live geladen werden.");
+        console.warn(failed);
+      }
+      $("updated").textContent = "Stand " + new Date().toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    $("refresh").addEventListener("click", loadAll);
+    loadAll();
+  </script>
+
+
+</body></html>
